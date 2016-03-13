@@ -31,6 +31,48 @@ void caffe_cpu_gemm<double>(const CBLAS_TRANSPOSE TransA,
       ldb, beta, C, N);
 }
 
+
+void c_gemm(const CBLAS_TRANSPOSE TransA,
+    const CBLAS_TRANSPOSE TransB, const int M, const int N, const int K,
+    const float alpha, const float* A, const float* B, const float beta,
+    float* C) {
+    int lda = (TransA == CblasNoTrans) ? K : M;
+    int ldb = (TransB == CblasNoTrans) ? N : K;
+    //row major
+    for (int i=0; i<M; i++) {
+        for (int j=0; j<N; j++) {
+           C[i*N+j] = beta*C[i*N+j];
+           for (int k=0; k<K; k++) {
+                //C(i,j) += A(i,k)*B(k,j)
+               float A_ik = (TransA == CblasNoTrans) ? A[i*lda+k] : A[k*lda+i];
+               float B_kj = (TransB == CblasNoTrans) ? B[k*ldb+j] : B[j*ldb+k];
+               C[i*N+j] += alpha*A_ik*B_kj;
+           }
+        }
+    }
+}
+
+
+void c_gemm(const CBLAS_TRANSPOSE TransA,
+    const CBLAS_TRANSPOSE TransB, const int M, const int N, const int K,
+    const double alpha, const double* A, const double* B, const double beta,
+    double* C) {
+    int lda = (TransA == CblasNoTrans) ? K : M;
+    int ldb = (TransB == CblasNoTrans) ? N : K;
+    //row major
+    for (int i=0; i<M; i++) {
+    	for (int j=0; j<N; j++) {
+           C[i*N+j] = beta*C[i*N+j];
+           for (int k=0; k<K; k++) {
+		//C(i,j) += A(i,k)*B(k,j)
+               double A_ik = (TransA == CblasNoTrans) ? A[i*lda+k] : A[k*lda+i];
+               double B_kj = (TransB == CblasNoTrans) ? B[k*ldb+j] : B[j*ldb+k];
+               C[i*N+j] += alpha*A_ik*B_kj;
+           }
+        }
+    }
+}
+
 template <>
 void caffe_cpu_gemv<float>(const CBLAS_TRANSPOSE TransA, const int M,
     const int N, const float alpha, const float* A, const float* x,
@@ -44,6 +86,33 @@ void caffe_cpu_gemv<double>(const CBLAS_TRANSPOSE TransA, const int M,
     const double beta, double* y) {
   cblas_dgemv(CblasRowMajor, TransA, M, N, alpha, A, N, x, 1, beta, y, 1);
 }
+
+
+void c_gemv(const CBLAS_TRANSPOSE TransA, const int M,
+    const int N, const double alpha, const double* A, const double* x,
+    const double beta, double* y) {
+    for  (int i=0; i<M; i++){
+        y[i] = beta*y[i];
+       for (int j=0; j<N; j++) {
+           double A_ik = (TransA == CblasNoTrans) ? A[i*N+j] : A[j*M+i];
+           y[i] += alpha*A_ik*x[j];
+       }
+    }
+}
+
+void c_gemv(const CBLAS_TRANSPOSE TransA, const int M,
+    const int N, const float alpha, const float* A, const float* x,
+    const float beta, float* y) {
+    for  (int i=0; i<M; i++){
+        y[i] = beta*y[i];
+       for (int j=0; j<N; j++) {
+           double A_ik = (TransA == CblasNoTrans) ? A[i*N+j] : A[j*M+i];
+           y[i] += alpha*A_ik*x[j];
+       }
+    }
+}
+
+
 
 template <>
 void caffe_axpy<float>(const int N, const float alpha, const float* X,

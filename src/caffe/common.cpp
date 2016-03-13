@@ -21,6 +21,7 @@ Caffe& Caffe::Get() {
 
 // random seeding
 int64_t cluster_seedgen(void) {
+  return 37;
   int64_t s, seed, pid;
   FILE* f = fopen("/dev/urandom", "rb");
   if (f && fread(&seed, 1, sizeof(seed), f) == sizeof(seed)) {

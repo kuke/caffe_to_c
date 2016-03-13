@@ -18,6 +18,8 @@
 
 #include "caffe/util/device_alternate.hpp"
 
+#define TEST_C_FUNCTIONS 
+
 // Convert macro to string
 #define STRINGIFY(m) #m
 #define AS_STRING(m) STRINGIFY(m)
